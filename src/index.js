@@ -23,7 +23,16 @@ app.post("/account", (req, res) => {
     name,
     cpf,
     id: uuidv4(),
+    statement: [],
   });
 
   return res.status(201).send(costumers);
+});
+
+app.get("/statement/:cpf", (req, res) => {
+  const { cpf } = req.params;
+
+  const costumer = costumers.find((costumer) => costumer.cpf === cpf);
+
+  return res.send(costumer.statement);
 });
