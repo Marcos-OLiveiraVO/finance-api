@@ -10,13 +10,20 @@ const costumers = [];
 
 app.post("/account", (req, res) => {
   const { name, cpf } = req.body;
-  const id = uuidv4();
+
+  const costumerAlreadyExist = costumers.some(
+    (costumer) => costumer.cpf === cpf
+  );
+
+  if (costumerAlreadyExist) {
+    return res.status(400).send({ Error: "Costumer already exist " });
+  }
 
   costumers.push({
     name,
     cpf,
-    id,
+    id: uuidv4(),
   });
 
-  return res.send(costumers);
+  return res.status(201).send(costumers);
 });
