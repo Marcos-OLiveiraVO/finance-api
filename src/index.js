@@ -29,10 +29,14 @@ app.post("/account", (req, res) => {
   return res.status(201).send(costumers);
 });
 
-app.get("/statement/:cpf", (req, res) => {
-  const { cpf } = req.params;
+app.get("/statement", (req, res) => {
+  const { cpf } = req.headers;
 
   const costumer = costumers.find((costumer) => costumer.cpf === cpf);
+
+  if (!costumer) {
+    return res.status(400).send({ Error: "User not found." });
+  }
 
   return res.send(costumer.statement);
 });
