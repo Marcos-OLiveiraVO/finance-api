@@ -10,16 +10,28 @@ const costumers = [];
 
 function verifyIfAccountCpfExist(req, res, next) {
   const { cpf } = req.headers;
-
   const costumer = costumers.find((costumer) => costumer.cpf === cpf);
 
   if (!costumer) {
-    return res.status(400).send({ Error: "Costumer not found." });
+    return res.status(400).json({ error: "Customer not found!" });
   }
 
+  // Adicionando novo parâmetro de request no middleware
   req.costumer = costumer;
 
   return next();
+}
+
+function getBalance(statement) {
+  const balance = costumers.reduce((acc, operation) => {
+    if (operation.type === "credit") {
+      return acc + operation.amount;
+    } else {
+      return acc - operation.amount;
+    }
+  }, 0);
+
+  return balance;
 }
 
 app.post("/account", (req, res) => {
@@ -34,16 +46,59 @@ app.post("/account", (req, res) => {
   }
 
   costumers.push({
-    name,
-    cpf,
     id: uuidv4(),
+    cpf,
+    name,
     statement: [],
   });
 
-  return res.status(201).send(costumers);
+  return res.status(201).send();
+});
+
+app.get("/account", verifyIfAccountCpfExist, (req, res) => {
+  const { costumer } = req;
+
+  return response.json(costumer);
 });
 
 app.get("/statement", verifyIfAccountCpfExist, (req, res) => {
   const { costumer } = req;
-  return res.send(costumer.statement);
+  return res.json(costumer.statement);
+});
+
+app.post("/deposit", verifyIfAccountCpfExist, (req, res) => {
+  const { description, amount } = req.body;
+  const { costumer } = req;
+
+  const statementOperation = {
+    description,
+    amount,
+    created_at: new Date(),
+    type: "credit",
+  };
+
+  costumer.statement.push(statementOperation);
+
+  return res.status(201).send();
+});
+
+app.post("/withdraw", verifyIfAccountCpfExist, (req, res) => {
+  const { amount } = req.body;
+  const { costumer } = req;
+
+  const balance = getBalance(costumer.statement);
+
+  if (balance < amount) {
+    return res.status(400).send({ Error: "Insufficient funds." });
+  }
+
+  const statementOperation = {
+    amount,
+    create_At: new Date(),
+    type: "debit",
+  };
+
+  costumer.statement.push(statementOperation);
+
+  return res.status(201).send();
 });
