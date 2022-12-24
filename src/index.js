@@ -66,6 +66,21 @@ app.get("/statement", verifyIfAccountCpfExist, (req, res) => {
   return res.json(costumer.statement);
 });
 
+app.get("/statement/date", verifyIfAccountCpfExist, (request, response) => {
+  const { costumer } = request;
+  const { date } = request.query;
+
+  const dateFormat = new Date(date + " 00:00");
+
+  const statement = costumer.statement.filter(
+    (statement) =>
+      statement.created_at.toDateString() ===
+      new Date(dateFormat).toDateString()
+  );
+
+  return response.json(statement);
+});
+
 app.post("/deposit", verifyIfAccountCpfExist, (req, res) => {
   const { description, amount } = req.body;
   const { costumer } = req;
