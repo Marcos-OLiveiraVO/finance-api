@@ -1,28 +1,29 @@
-const express = require("express");
+import express from "express";
+import { v4 as uuidv4 } from "uuid";
+
 const app = express();
 const PORT = 3000;
-const { v4: uuidv4 } = require("uuid");
 
-app.listen(PORT, () => console.log("Server is running..."));
+app.listen(PORT, console.log("Server is Open"));
 app.use(express.json());
 
-const costumers = [];
+const customers = [];
 
-function verifyIfAccountCpfExist(req, res, next) {
-  const { cpf } = req.headers;
-  const costumer = costumers.find((costumer) => costumer.cpf === cpf);
+function verifyIfExistsAccountCpf(request, response, next) {
+  const { cpf } = request.headers;
+  const customer = customers.find((customer) => customer.cpf === cpf);
 
-  if (!costumer) {
-    return res.status(400).json({ error: "Customer not found!" });
+  if (!customer) {
+    return response.status(400).json({ error: "Customer not found!" });
   }
 
-  req.costumer = costumer;
+  request.customer = customer;
 
   return next();
 }
 
 function getBalance(statement) {
-  const balance = costumers.reduce((acc, operation) => {
+  const balance = statement.reduce((acc, operation) => {
     if (operation.type === "credit") {
       return acc + operation.amount;
     } else {
@@ -33,39 +34,63 @@ function getBalance(statement) {
   return balance;
 }
 
-app.post("/account", (req, res) => {
-  const { name, cpf } = req.body;
+app.post("/account", (request, response) => {
+  const { name, cpf } = request.body;
 
-  const costumerAlreadyExist = costumers.some(
-    (costumer) => costumer.cpf === cpf
+  const customerAlreadyExists = customers.some(
+    (customer) => customer.cpf === cpf
   );
 
-  if (costumerAlreadyExist) {
-    return res.status(400).send({ Error: "Costumer already exist " });
+  if (customerAlreadyExists) {
+    return response.status(400).json({ error: "Customer already exists!" });
   }
 
-  costumers.push({
+  customers.push({
     id: uuidv4(),
-    cpf,
     name,
+    cpf,
     statement: [],
   });
 
-  return res.status(201).send();
+  return response.status(201).send();
 });
 
-app.get("/statement", verifyIfAccountCpfExist, (req, res) => {
-  const { costumer } = req;
-  return res.json(costumer.statement);
+app.get("/account", verifyIfExistsAccountCpf, (request, response) => {
+  const { customer } = request;
+
+  return response.json(customer);
 });
 
-app.get("/statement/date", verifyIfAccountCpfExist, (request, response) => {
-  const { costumer } = request;
+app.put("/account", verifyIfExistsAccountCpf, (request, response) => {
+  const { name } = request.body;
+  const { customer } = request;
+
+  customer.name = name;
+
+  return response.status(201).send();
+});
+
+app.delete("/account", verifyIfExistsAccountCpf, (request, response) => {
+  const { customer } = request;
+
+  customers.splice(customer, 1);
+
+  return response.status(200).json(customers);
+});
+
+app.get("/statement", verifyIfExistsAccountCpf, (request, response) => {
+  const { customer } = request;
+
+  return response.json(customer.statement);
+});
+
+app.get("/statement/date", verifyIfExistsAccountCpf, (request, response) => {
+  const { customer } = request;
   const { date } = request.query;
 
   const dateFormat = new Date(date + " 00:00");
 
-  const statement = costumer.statement.filter(
+  const statement = customer.statement.filter(
     (statement) =>
       statement.created_at.toDateString() ===
       new Date(dateFormat).toDateString()
@@ -74,9 +99,9 @@ app.get("/statement/date", verifyIfAccountCpfExist, (request, response) => {
   return response.json(statement);
 });
 
-app.post("/deposit", verifyIfAccountCpfExist, (req, res) => {
-  const { description, amount } = req.body;
-  const { costumer } = req;
+app.post("/deposit", verifyIfExistsAccountCpf, (request, response) => {
+  const { description, amount } = request.body;
+  const { customer } = request;
 
   const statementOperation = {
     description,
@@ -85,43 +110,36 @@ app.post("/deposit", verifyIfAccountCpfExist, (req, res) => {
     type: "credit",
   };
 
-  costumer.statement.push(statementOperation);
+  customer.statement.push(statementOperation);
 
-  return res.status(201).send();
+  return response.status(201).send();
 });
 
-app.post("/withdraw", verifyIfAccountCpfExist, (req, res) => {
-  const { amount } = req.body;
-  const { costumer } = req;
+app.post("/withdraw", verifyIfExistsAccountCpf, (request, response) => {
+  const { amount } = request.body;
+  const { customer } = request;
 
-  const balance = getBalance(costumer.statement);
+  const balance = getBalance(customer.statement);
 
   if (balance < amount) {
-    return res.status(400).send({ Error: "Insufficient funds." });
+    return response.status(400).json({ error: "Insufficient funds!" });
   }
 
   const statementOperation = {
     amount,
-    create_At: new Date(),
+    created_at: new Date(),
     type: "debit",
   };
 
-  costumer.statement.push(statementOperation);
+  customer.statement.push(statementOperation);
 
-  return res.status(201).send();
+  return response.status(201).send();
 });
 
-app.put("/account", verifyIfAccountCpfExist, (req, res) => {
-  const { name } = req.body;
-  const { costumer } = req;
+app.get("/balance", verifyIfExistsAccountCpf, (request, response) => {
+  const { customer } = request;
 
-  costumer.name = name;
+  const balance = getBalance(customer.statement);
 
-  return res.status(201).send();
-});
-
-app.get("/account", verifyIfAccountCpfExist, (req, res) => {
-  const { costumer } = req;
-
-  res.send(costumer);
+  return response.json(balance);
 });
