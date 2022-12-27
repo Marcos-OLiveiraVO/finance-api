@@ -1,6 +1,12 @@
 
 ## Sobre o Finance Api
 
+Ela oferece várias funcionalidades para gerenciamento de contas bancárias, como a criação de novos usuários, a obtenção de dados bancários de clientes existentes, a realização de depósitos e saques, a atualização de informações de clientes e a exclusão de contas. Além disso, a API também pode retornar o saldo atual de uma conta de cliente.
+<br>
+<br>
+Essas funcionalidades são úteis para aplicativos de gerenciamento financeiro ou serviços bancários online, permitindo aos usuários realizar transações e gerenciar suas finanças de maneira conveniente e segura.
+
+Neste caso, Esse sistema permite criar um usuário, extrair os dados bancários do cliente, realizar um depósito, realizar um saque, atualizar os dados do cliente, deletar uma conta e retornar o saldo da conta.
 
 ## :rocket:Instalação
 Para rodar o repositório é necessário clonar o mesmo, dar o seguinte comando para instalar as dependencias:
@@ -12,36 +18,13 @@ $ npm install
 ## Rodar o app
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+$ yarn dev
 ```
-## 📍 Para os Testes foi utilizado: 
-- Jest foi utilizado para ser o TestRunner
-
-
-<h3>✨ Utilizando os testes:</h3>
-
-<h5> Testes de unidade: </h5>
-
-      npm run test:watch
 
 <h4> 🛠 Projeto foi desenvolvido utilizando as seguintes tecnologias e conceitos: <h4>
 
-    - Node
-    - Nest.js
-    - SQL 
-    - Prisma
-    - Jest
-    - TDD 
-    - UUID
-    - Clean Archicteture.
-    - Solid.
-    - Kafka
+    - Node.
+    - Sucrase.
+    - Nodemon.
 
 
