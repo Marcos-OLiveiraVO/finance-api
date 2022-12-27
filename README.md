@@ -19,7 +19,12 @@ $ npm install
 
 ```bash
 $ yarn dev
+
+
 ```
+
+![finance](https://user-images.githubusercontent.com/88260644/209712775-9ae03deb-95d4-46f7-9037-5b759fd18b88.gif)
+
 
 <h4> 🛠 Projeto foi desenvolvido utilizando as seguintes tecnologias e conceitos: <h4>
 
