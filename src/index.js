@@ -16,7 +16,6 @@ function verifyIfAccountCpfExist(req, res, next) {
     return res.status(400).json({ error: "Customer not found!" });
   }
 
-  // Adicionando novo parâmetro de request no middleware
   req.costumer = costumer;
 
   return next();
@@ -53,12 +52,6 @@ app.post("/account", (req, res) => {
   });
 
   return res.status(201).send();
-});
-
-app.get("/account", verifyIfAccountCpfExist, (req, res) => {
-  const { costumer } = req;
-
-  return response.json(costumer);
 });
 
 app.get("/statement", verifyIfAccountCpfExist, (req, res) => {
@@ -116,4 +109,19 @@ app.post("/withdraw", verifyIfAccountCpfExist, (req, res) => {
   costumer.statement.push(statementOperation);
 
   return res.status(201).send();
+});
+
+app.put("/account", verifyIfAccountCpfExist, (req, res) => {
+  const { name } = req.body;
+  const { costumer } = req;
+
+  costumer.name = name;
+
+  return res.status(201).send();
+});
+
+app.get("/account", verifyIfAccountCpfExist, (req, res) => {
+  const { costumer } = req;
+
+  res.send(costumer);
 });
